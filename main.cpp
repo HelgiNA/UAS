@@ -276,11 +276,12 @@ void keranjangTransaksi(int idTransaksi);
 void tambahTransaksi()
 {
     transaksi[jumlahTransaksi].kode = jumlahTransaksi;
-    tampilkanProduk(0);
     int total;
 
 tambahUlang:
 {
+    system("cls");
+    tampilkanProduk(0);
 
     int jumlah = 0, kode = 0;
 
@@ -302,15 +303,15 @@ tambahUlang:
     }
 
     produk[kode].stok -= jumlah;
+    int jumlahHarga = produk[kode].harga * jumlah;
     cout << "\nBerhasil menambahkan " << produk[kode].nama << " Sebanyak " << jumlah << ".\n";
 
     detail[JumlahDetailTransaksi].idTransaksi = jumlahTransaksi;
     detail[JumlahDetailTransaksi].kodeProduk = produk[kode].kode;
     detail[JumlahDetailTransaksi].qty = jumlah;
-    detail[JumlahDetailTransaksi].jumlahHarga = produk[kode].harga * jumlah;
+    detail[JumlahDetailTransaksi].jumlahHarga = jumlahHarga;
 
-    cout << detail[JumlahDetailTransaksi].jumlahHarga << endl;
-
+    total += jumlahHarga;
     keranjangTransaksi(jumlahTransaksi);
 
     cout << "Apakah anda ingin menambahkan kembali produk ke keranjang : ";
@@ -329,7 +330,7 @@ tambahUlang:
 // Fungsi untuk menyimpan transaksi ke dalam keranjang sementara
 void keranjangTransaksi(int idTransaksi)
 {
-    for (int i = 0; i < JumlahDetailTransaksi; i++)
+    for (int i = 1; i <= JumlahDetailTransaksi; i++)
     {
         if (detail[i].idTransaksi == idTransaksi)
         {
