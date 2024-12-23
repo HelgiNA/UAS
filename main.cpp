@@ -1,6 +1,8 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <ctime>
+
 using namespace std;
 
 void heading(string label)
@@ -10,18 +12,43 @@ void heading(string label)
     cout << "======================================================" << endl;
 }
 
-// Struktur untuk menyimpan data produk
 struct Produk
 {
     int kode;
     string nama;
     int stok;
-    double harga;
+    int harga;
 };
 
 // Array untuk menyimpan produk
-Produk produk[100];
-int jumlahProduk = 1;
+Produk produk[100] = {
+    {},
+    {1, "Beras Premium 5kg", 50, 65000},
+    {2, "Minyak Goreng 2L", 75, 45000},
+    {3, "Gula Pasir 1kg", 100, 15000},
+    {4, "Susu UHT 1L", 80, 18000},
+    {5, "Telur Ayam 1kg", 60, 28000},
+    {6, "Mi Instan Goreng", 200, 3500},
+    {7, "Mi Instan Kuah", 200, 3000},
+    {8, "Kopi Sachet", 150, 12000},
+    {9, "Teh Celup 25pcs", 90, 8000},
+    {10, "Sabun Mandi", 120, 5000},
+    {11, "Shampo Sachet", 180, 1000},
+    {12, "Pasta Gigi", 85, 15000},
+    {13, "Deterjen Bubuk 1kg", 70, 25000},
+    {14, "Sabun Cuci Piring", 65, 12000},
+    {15, "Air Mineral 1.5L", 100, 6000},
+    {16, "Roti Tawar", 45, 14000},
+    {17, "Sarden Kaleng", 90, 8500},
+    {18, "Mie Telor", 75, 7000},
+    {19, "Tepung Terigu 1kg", 60, 12000},
+    {20, "Tissue 250sheet", 100, 8000},
+    {21, "Kecap Manis 600ml", 70, 16000},
+    {22, "Saos Sambal 340ml", 65, 12000},
+    {23, "Mentega 200g", 50, 8000},
+    {24, "Sirup 650ml", 40, 18000},
+    {25, "Snack Kentang", 150, 9000}};
+int jumlahProduk = 26;
 
 // Fungsi untuk menampilkan menu pengelolaan produk
 void tambahProduk();
@@ -29,6 +56,7 @@ void tampilkanProduk(int kode);
 void editProduk();
 void hapusProduk();
 void cariProduk();
+bool cekProduk(int kode);
 
 void pengelolaanProduk()
 {
@@ -72,14 +100,17 @@ void pengelolaanProduk()
             cout << "Pilihan tidak valid.\n";
             break;
         }
-
-        system("pause");
+        if (pilihan != 6)
+        {
+            system("pause");
+        }
     } while (pilihan != 6);
 }
 
 // Fungsi untuk menambahkan produk
 void tambahProduk()
 {
+    cout << jumlahProduk << endl;
     cout << "=== Tambah Produk ===\n";
     cout << "Nama Produk  : ";
     cin >> produk[jumlahProduk].nama;
@@ -110,7 +141,7 @@ void tampilkanProduk(int kode)
             }
         }
     }
-    else
+    else if (cekProduk(kode))
     {
         cout << "| " << setw(4) << produk[kode].kode << " | " << setw(17) << produk[kode].nama << " | " << setw(14) << produk[kode].harga << " | " << setw(6) << produk[kode].stok << " | " << endl;
     }
@@ -126,7 +157,7 @@ void editProduk()
     cout << "Masukan kode produk yang ingin diperbarui : ";
     cin >> kode;
 
-    if (produk[kode].kode > 0)
+    if (cekProduk(kode))
     {
         tampilkanProduk(kode);
 
@@ -137,10 +168,7 @@ void editProduk()
         cin >> produk[kode].harga;
         cout << "Stok  : ";
         cin >> produk[kode].stok;
-    }
-    else
-    {
-        cout << "Produk dengan kode produk " << kode << " tidak ditemukan.\n";
+        cout << "Berhasil Memperbarui produk" << endl;
     }
 }
 
@@ -152,7 +180,7 @@ void hapusProduk()
     cout << "Masukan kode produk yang ingin dihapus : ";
     cin >> kode;
 
-    if (produk[kode].kode > 0)
+    if (cekProduk(kode))
     {
         tampilkanProduk(kode);
 
@@ -168,10 +196,6 @@ void hapusProduk()
         {
             cout << "Hapus Produk di batalkan\n";
         }
-    }
-    else
-    {
-        cout << "Produk dengan kode produk " << kode << " tidak ditemukan.\n";
     }
 }
 
@@ -210,21 +234,27 @@ bool cekProduk(int kode)
     }
     if (!ditemukan)
     {
-        cout << "Produk tidak ditemukan.\n";
+        cout << "Produk dengan kode produk " << kode << " tidak ditemukan.\n";
     }
 
     return ditemukan;
 }
 
+time_t timestamp = time(NULL);
+struct tm datetime = *localtime(&timestamp);
+char outputTime[50];
+
 // Struktur untuk menyimpan data transaksi
 struct detaiTransaksi
 {
-    int kodeProduk, idTransaksi, qty, jumlahHarga;
+    int kodeProduk, idTransaksi, kuantitas, subTotal;
 };
 
 struct Transaksi
 {
-    int kode, totalTransaksi, idDetailTransaksi;
+    int idTransaksi;
+    string tanggalTransaksi;
+    int totalTransaksi = 0;
 };
 
 Transaksi transaksi[100];
@@ -234,6 +264,7 @@ int JumlahDetailTransaksi = 1;
 
 // Fungsi untuk transaksi penjualan
 void tambahTransaksi();
+void tampilkanTransaksi();
 
 void transaksiPenjualan()
 {
@@ -260,86 +291,149 @@ void transaksiPenjualan()
             tambahTransaksi();
             break;
         case 2:
+            tampilkanTransaksi();
             break;
         case 3:
-            editProduk();
             break;
         }
-
         system("pause");
     } while (pilihan != 4);
 }
 
 // Fungsi untuk Menambahkan Transaksi
-void keranjangTransaksi(int idTransaksi);
+void lihatKeranjangTransaksi(int idTransaksi);
+void tambahProdukKeKeranjang();
 
 void tambahTransaksi()
 {
-    transaksi[jumlahTransaksi].kode = jumlahTransaksi;
-    int total;
+    int pilihan;
+    do
+    {
+        system("cls");
+        cout << "======================================================" << endl;
+        cout << "                   TRANKSAKSI BARU                    " << endl;
+        cout << "======================================================" << endl;
+        lihatKeranjangTransaksi(jumlahTransaksi);
+        cout << "======================================================" << endl;
+        cout << "Pilih Menu Utama:" << endl;
+        cout << "1. Tambahkan Produk ke Dalam Keranjang\n";
+        cout << "2. Lihat Daftar Produk\n";
+        cout << "3. Keluar dan Simpan\n";
+        cout << "======================================================" << endl;
+        cout << "Masukan Pilihan Anda : ";
+        cin >> pilihan;
 
-tambahUlang:
+        cout << endl;
+        switch (pilihan)
+        {
+        case 1:
+        {
+            tambahProdukKeKeranjang();
+            break;
+        }
+        case 2:
+        {
+            tampilkanProduk(0);
+            break;
+        }
+        case 3:
+        {
+            char In;
+            cout << "Apakah anda ingin menyimpan Transaksi ini\n[Y] Simpan  [N] Tidak  [C] Batal\nMasukan Pilihan anda : ";
+            cin >> In;
+            if (In == 'Y' || In == 'y')
+            {
+                transaksi[jumlahTransaksi].idTransaksi = jumlahTransaksi;
+                strftime(outputTime, 50, "%d/%m/%y", &datetime);
+                transaksi[jumlahTransaksi].tanggalTransaksi = outputTime;
+                jumlahTransaksi++;
+
+                cout << "Transaksi Berhasil disimpan\n";
+            }
+            else if (In == 'N' || In == 'n')
+            {
+                cout << "Transaksi Tidak disimpan\n";
+            }
+            else if (In == 'C' || In == 'c')
+            {
+                cout << "Transaksi dibatalkan\n";
+                pilihan = 0;
+            }
+        }
+        break;
+        }
+
+        system("pause");
+    } while (pilihan != 3);
+}
+
+// Fungsi untuk menambahkan produk ke dalam keranjang
+void tambahProdukKeKeranjang()
 {
     system("cls");
-    tampilkanProduk(0);
+    int kode = 0, kuantitas = 0;
 
-    int jumlah = 0, kode = 0;
-
-    cout << "Masukkan kode produk yang ingin dibeli : ";
+    cout << "======================================================" << endl;
+    cout << "              TAMBAHKAN PRODUK KE KERANJANG           " << endl;
+    cout << "======================================================" << endl;
+    cout << "Masukkan Kode Produk: ";
     cin >> kode;
-
-    char tambah;
     if (!cekProduk(kode))
     {
-        goto tambahUlang;
+        return;
     }
-
-    cout << "Masukkan jumlah yang ingin dibeli : ";
-    cin >> jumlah;
-    if (!produk[kode].stok >= jumlah)
+    cout << "Masukkan Kuantitas  : ";
+    cin >> kuantitas;
+    if (produk[kode].stok - kuantitas < 0)
     {
         cout << "Stok tidak mencukupi.\n";
-        goto tambahUlang;
+        return;
     }
 
-    produk[kode].stok -= jumlah;
-    int jumlahHarga = produk[kode].harga * jumlah;
-    cout << "\nBerhasil menambahkan " << produk[kode].nama << " Sebanyak " << jumlah << ".\n";
+    int subTotal = produk[kode].harga * kuantitas;
 
-    detail[JumlahDetailTransaksi].idTransaksi = jumlahTransaksi;
-    detail[JumlahDetailTransaksi].kodeProduk = produk[kode].kode;
-    detail[JumlahDetailTransaksi].qty = jumlah;
-    detail[JumlahDetailTransaksi].jumlahHarga = jumlahHarga;
+    cout << "------------------------------------------------------" << endl;
+    cout << "Nama Produk         : " << produk[kode].nama << endl;
+    cout << "Harga Satuan        : " << produk[kode].harga << endl;
+    cout << "Subtotal            : " << subTotal << endl;
+    cout << "------------------------------------------------------" << endl;
+    cout << "Produk berhasil ditambahkan ke keranjang!" << endl;
 
-    total += jumlahHarga;
-    keranjangTransaksi(jumlahTransaksi);
-
-    cout << "Apakah anda ingin menambahkan kembali produk ke keranjang : ";
-    cin >> tambah;
-    if (tambah == 'y' || tambah == 'Y')
-    {
-        JumlahDetailTransaksi++;
-        goto tambahUlang;
-    }
+    detail[JumlahDetailTransaksi] = {jumlahTransaksi, produk[kode].kode, kuantitas, subTotal};
+    transaksi[jumlahTransaksi].totalTransaksi += subTotal;
+    JumlahDetailTransaksi++;
 }
 
-    transaksi[jumlahTransaksi].totalTransaksi = total;
-    jumlahTransaksi++;
-}
-
-// Fungsi untuk menyimpan transaksi ke dalam keranjang sementara
-void keranjangTransaksi(int idTransaksi)
+// Fungsi untuk melihat produk di dalam keranjang
+void lihatKeranjangTransaksi(int idTransaksi)
 {
+
+    cout << "|                   KERANJANG ANDA                   |" << endl;
+    cout << "======================================================" << endl;
+    cout << "| Kode |    Nama Produk    |  QTY  |   Jumlah Harga  |" << endl;
     for (int i = 1; i <= JumlahDetailTransaksi; i++)
     {
         if (detail[i].idTransaksi == idTransaksi)
         {
-            cout << detail[i].idTransaksi << endl;
-            cout << detail[i].kodeProduk << endl;
-            cout << detail[i].qty << endl;
-            cout << detail[i].jumlahHarga << endl;
+            cout << "| " << setw(4) << detail[i].kodeProduk << " | " << setw(17) << produk[detail[i].kodeProduk].nama << " | " << setw(5) << detail[i].kuantitas << " | " << setw(15) << detail[i].subTotal << " | " << endl;
         }
     }
+    cout << "======================================================" << endl;
+    cout << "| " << setw(35) << "Total Harga | " << setw(15) << transaksi[idTransaksi].totalTransaksi << " | " << endl;
+}
+
+// Fungsi untuk menampilkan daftar traksaksi
+void tampilkanTransaksi()
+{
+    cout << "=======================================================" << endl;
+    cout << "                    DAFTAR TRANSAKSI                   " << endl;
+    cout << "=======================================================" << endl;
+    cout << "|  Tangga  | Nomor Transaksi | Total Transaksi | Metode |" << endl;
+    for (int i = 1; i < jumlahTransaksi; i++)
+    {
+        cout << "| " << setw(8) << transaksi[i].tanggalTransaksi << " | " << setw(15) << transaksi[i].totalTransaksi << " | " << setw(15) << transaksi[i].totalTransaksi << " | " << "Tunai" << endl;
+    }
+    cout << "======================================================" << endl;
 }
 
 // Fungsi menu utama
