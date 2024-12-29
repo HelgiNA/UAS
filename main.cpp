@@ -5,6 +5,10 @@
 
 using namespace std;
 
+time_t timestamp = time(NULL);
+struct tm datetime = *localtime(&timestamp);
+char outputTime[50];
+
 void heading(string label)
 {
     cout << "======================================================" << endl;
@@ -240,10 +244,6 @@ bool cekProduk(int kode)
     return ditemukan;
 }
 
-time_t timestamp = time(NULL);
-struct tm datetime = *localtime(&timestamp);
-char outputTime[50];
-
 // Struktur untuk menyimpan data transaksi
 struct detaiTransaksi
 {
@@ -265,6 +265,9 @@ int JumlahDetailTransaksi = 1;
 // Fungsi untuk transaksi penjualan
 void tambahTransaksi();
 void tampilkanTransaksi();
+void lihatKeranjangTransaksi(int idTransaksi);
+void tambahProdukKeKeranjang();
+void cetakStrukPenjualan();
 
 void transaksiPenjualan()
 {
@@ -284,7 +287,6 @@ void transaksiPenjualan()
         cout << "Masukan Pilihan Anda : ";
         cin >> pilihan;
 
-        cout << endl;
         switch (pilihan)
         {
         case 1:
@@ -294,6 +296,7 @@ void transaksiPenjualan()
             tampilkanTransaksi();
             break;
         case 3:
+            cetakStrukPenjualan();
             break;
         }
         system("pause");
@@ -301,9 +304,6 @@ void transaksiPenjualan()
 }
 
 // Fungsi untuk Menambahkan Transaksi
-void lihatKeranjangTransaksi(int idTransaksi);
-void tambahProdukKeKeranjang();
-
 void tambahTransaksi()
 {
     int pilihan;
@@ -331,11 +331,13 @@ void tambahTransaksi()
         case 1:
         {
             tambahProdukKeKeranjang();
+            system("pause");
             break;
         }
         case 2:
         {
             tampilkanProduk(0);
+            system("pause");
             break;
         }
         case 3:
@@ -346,9 +348,9 @@ void tambahTransaksi()
             if (In == 'Y' || In == 'y')
             {
                 system("cls");
-                int pajak, subTotal, total;
                 transaksi[jumlahTransaksi].idTransaksi = jumlahTransaksi;
 
+                int pajak, subTotal, total;
                 subTotal = transaksi[jumlahTransaksi].totalTransaksi;
                 pajak = transaksi[jumlahTransaksi].totalTransaksi * 0.1;
                 total = transaksi[jumlahTransaksi].totalTransaksi + pajak;
@@ -359,15 +361,13 @@ void tambahTransaksi()
                 cout << "| " << setw(35) << "SubTotal | " << setw(15) << subTotal << " | " << endl;
                 cout << "| " << setw(35) << "Pajak (10%) | " << setw(15) << pajak << " | " << endl;
                 cout << "| " << setw(35) << "Total | " << setw(15) << total << " | " << endl;
-                cout << "--------------------------------------------------" << endl;
+                cout << "------------------------------------------------------" << endl;
 
                 int bayar;
                 cout << "Masukkan pembayaran pelanggan : Rp";
                 cin >> bayar;
-
-                if (bayar)
-                    cout << "Kembalian                     : Rp35.000" << endl;
-                cout << "==================================================" << endl;
+                cout << "Kembalian                     : Rp" << bayar - total << endl;
+                cout << "======================================================" << endl;
                 cout << "Transaksi berhasil dicatat!" << endl;
 
                 strftime(outputTime, 50, "%d/%m/%y", &datetime);
@@ -386,8 +386,6 @@ void tambahTransaksi()
         }
         break;
         }
-
-        system("pause");
     } while (pilihan != 3);
 }
 
@@ -448,18 +446,123 @@ void lihatKeranjangTransaksi(int idTransaksi)
 }
 
 // Fungsi untuk menampilkan daftar traksaksi
+void tampilkanDetailTransaksi(int id);
 void tampilkanTransaksi()
 {
+    system("cls");
+    int idTransaksi;
     cout << "=======================================================" << endl;
     cout << "                    DAFTAR TRANSAKSI                   " << endl;
     cout << "=======================================================" << endl;
     cout << "|  Tanggal  | Nomor Transaksi | Total Transaksi | Metode |" << endl;
     for (int i = 1; i < jumlahTransaksi; i++)
     {
-        cout << "| " << setw(9) << transaksi[i].tanggalTransaksi << " | " << setw(15) << transaksi[i].idTransaksi << " | " << setw(15) << transaksi[i].totalTransaksi << " | "
-             << "Tunai" << endl;
+        cout << "| " << setw(9) << transaksi[i].tanggalTransaksi
+             << " | " << setw(15) << transaksi[i].idTransaksi
+             << " | " << setw(15) << transaksi[i].totalTransaksi
+             << " | " << "Tunai" << endl;
     }
     cout << "======================================================" << endl;
+    cout << "Masukan Nomor Transaksi Untuk Detail : ";
+    cin >> idTransaksi;
+
+    if (transaksi[idTransaksi].idTransaksi != 0)
+    {
+        tampilkanDetailTransaksi(idTransaksi);
+    }
+    else
+    {
+        cout << "Transaksi Dengan Kode " << idTransaksi << " Tidak di Temukan!" << endl;
+    }
+}
+
+void tampilkanDetailTransaksi(int idTransaksi)
+{
+    system("cls");
+    int pajak, subTotal, total;
+    subTotal = transaksi[idTransaksi].totalTransaksi;
+    pajak = transaksi[idTransaksi].totalTransaksi * 0.1;
+    total = transaksi[idTransaksi].totalTransaksi + pajak;
+
+    cout << "======================================================" << endl;
+    cout << "                   DETAIL TRANSAKSI                   " << endl;
+    cout << "======================================================" << endl;
+    cout << "Nomor Transaksi : " << transaksi[idTransaksi].idTransaksi << endl;
+    cout << "Tanggal/Waktu   : " << transaksi[idTransaksi].tanggalTransaksi << endl;
+    cout << "======================================================" << endl;
+    cout << "|                 Produk Yang di Beli                |" << endl;
+    lihatKeranjangTransaksi(idTransaksi);
+    cout << "| " << setw(35) << "SubTotal | " << setw(15) << subTotal << " | " << endl;
+    cout << "| " << setw(35) << "Pajak (10%) | " << setw(15) << pajak << " | " << endl;
+    cout << "| " << setw(35) << "Total | " << setw(15) << total << " | " << endl;
+    cout << "------------------------------------------------------" << endl;
+    cout << "Metode          : Tunai" << endl;
+    cout << "Kasir           : Hans" << endl;
+    cout << "======================================================" << endl;
+}
+
+void cetakStrukPenjualan()
+{
+    system("cls");
+    int idTransaksi;
+    cout << "=======================================================" << endl;
+    cout << "                CETAK STRUK PENJUALAN                 " << endl;
+    cout << "=======================================================" << endl;
+    cout << "Masukkan Nomor Transaksi: ";
+    cin >> idTransaksi;
+
+    // Periksa apakah transaksi ada
+    if (transaksi[idTransaksi].idTransaksi != 0)
+    {
+        system("cls");
+        cout << "=======================================================" << endl;
+        cout << "                   STRUK TRANSAKSI                    " << endl;
+        cout << "=======================================================" << endl;
+        cout << "Toko Retail XYZ\n";
+        cout << "Tanggal  : " << transaksi[idTransaksi].tanggalTransaksi << endl;
+        cout << "Kasir    : Hans" << endl; // Anda dapat mengganti nama kasir
+        cout << "-------------------------------------------------------" << endl;
+        cout << "Produk" << setw(26 - sizeof("Produk")) << ""
+
+             << "Qty" << setw(6 - sizeof("Qty")) << ""
+             << "Harga" << setw(9 - sizeof("Harga")) << ""
+             << "Total" << endl;
+
+        // Ambil detail transaksi
+        for (int i = 1; i <= JumlahDetailTransaksi; i++)
+        {
+            if (detail[i].idTransaksi == idTransaksi)
+            {
+                cout << produk[detail[i].kodeProduk].nama << setw(25 - produk[detail[i].kodeProduk].nama.length()) << ""
+                     << detail[i].kuantitas << setw(5 - to_string(detail[i].kuantitas).length()) << ""
+                     << produk[detail[i].kodeProduk].harga << setw(8 - to_string(produk[detail[i].kodeProduk].harga).length()) << ""
+                     << detail[i].subTotal << endl;
+            }
+        }
+
+        // Hitung total dan pajak
+        int subTotal = transaksi[idTransaksi].totalTransaksi;
+        int pajak = subTotal * 0.1; // Pajak 10%
+        int total = subTotal + pajak;
+
+        cout << "-------------------------------------------------------" << endl;
+        cout << "Subtotal                     : " << subTotal << endl;
+        cout << "Pajak (10%)                  : " << pajak << endl;
+        cout << "-------------------------------------------------------" << endl;
+        cout << "Total                        : " << total << endl;
+
+        // Input pembayaran pelanggan
+        int bayar;
+        cout << "Tunai                       : ";
+        cout << "Kembalian                   : " << bayar - total << endl;
+        cout << "=======================================================" << endl;
+        cout << "   Terima kasih telah berbelanja!                     " << endl;
+        cout << "=======================================================" << endl;
+    }
+    else
+    {
+        cout << "Transaksi dengan nomor " << idTransaksi << " tidak ditemukan!\n";
+    }
 }
 
 // Fungsi menu utama
