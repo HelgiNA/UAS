@@ -2,8 +2,12 @@
 #include <iomanip>
 #include <string>
 #include <ctime>
-
+#include <algorithm> // Tambahkan ini
+#include <cctype>    // Untuk std::isspace
 using namespace std;
+
+int getValidInput(int min = 1, int max = INT32_MAX);
+string getValidString();
 
 time_t timestamp = time(NULL);
 struct tm datetime = *localtime(&timestamp);
@@ -22,6 +26,7 @@ void membuatGaris(int panjangGaris, string simbol = "=")
 
 void heading(string label, int panjang = 52)
 {
+    system("cls");
     membuatGaris(panjang);
     cout << setw((panjang / 2) - (label.length() / 2)) << "" << label << endl;
     membuatGaris(panjang);
@@ -79,7 +84,6 @@ void pengelolaanProduk()
     int pilihan;
     do
     {
-        system("cls");
         heading("PENGELOLAAN PRODUK");
         cout << "Pilih Menu Utama:" << endl;
         cout << "1. Tambah Produk Baru\n";
@@ -90,9 +94,9 @@ void pengelolaanProduk()
         cout << "6. Kembali ke Menu Utama\n";
         cout << "======================================================" << endl;
         cout << "Masukan Pilihan Anda : ";
-        cin >> pilihan;
 
-        cout << endl;
+        pilihan = getValidInput(1, 6);
+
         switch (pilihan)
         {
         case 1:
@@ -110,41 +114,46 @@ void pengelolaanProduk()
         case 5:
             cariProduk();
             break;
-        default:
-            cout << "Pilihan tidak valid.\n";
+        case 6:
+            cout << "Keluar dari menu pengelolaan produk" << endl;
             break;
         }
-        if (pilihan != 6)
-        {
-            system("pause");
-        }
+
+        system("pause");
     } while (pilihan != 6);
 }
 
 // Fungsi untuk menambahkan produk
 void tambahProduk()
 {
-    cout << jumlahProduk << endl;
-    cout << "=== Tambah Produk ===\n";
-    cout << "Nama Produk  : ";
-    cin >> produk[jumlahProduk].nama;
-    cout << "Harga Produk : ";
-    cin >> produk[jumlahProduk].harga;
-    cout << "Stok Produk  : ";
-    cin >> produk[jumlahProduk].stok;
-    produk[jumlahProduk].kode = jumlahProduk;
+    heading("TAMBAH PRODUK BARU");
+
+    int kodeProduk = jumlahProduk;
+    cout << "Masukan Nama Produk   : ";
+    string nama = getValidString();
+    cout << "Masukkan Harga Satuan : ";
+    int harga = getValidInput(1000);
+    cout << "Masukkan Stok Awal    : ";
+    int stok = getValidInput();
+
+    produk[kodeProduk] = {
+        kodeProduk,
+        nama,
+        stok,
+        harga};
+
+    membuatGaris(52, "-");
+    cout << "Produk berhasil ditambahkan ke database!\n";
+
     jumlahProduk++;
-    cout << "Produk berhasil ditambahkan!\n";
 }
 
 // Fungsi untuk menampilkan semua produk
 void tampilkanProduk(int kode)
 {
-    cout << "======================================================" << endl;
-    cout << "                     DAFTAR PRODUK                    " << endl;
-    cout << "======================================================" << endl;
+    heading("DAFTAR PRODUK", 54);
     cout << "| Kode |    Nama Produk    |   Harga Jual   |  Stok  |" << endl;
-
+    membuatGaris(54, "-");
     if (kode == 0)
     {
         for (int i = 1; i < jumlahProduk; i++)
@@ -159,47 +168,43 @@ void tampilkanProduk(int kode)
     {
         cout << "| " << setw(4) << produk[kode].kode << " | " << setw(17) << produk[kode].nama << " | " << setw(14) << produk[kode].harga << " | " << setw(6) << produk[kode].stok << " | " << endl;
     }
-
-    cout << "======================================================" << endl;
+    membuatGaris(54, "-");
 }
 
 // Fungsi untuk mengedit produk
 void editProduk()
 {
-    int kode;
-
+    heading("PERBARUI INFORMASI PRODUK");
     cout << "Masukan kode produk yang ingin diperbarui : ";
-    cin >> kode;
+    int kode = getValidInput();
 
     if (cekProduk(kode))
     {
         tampilkanProduk(kode);
-
-        cout << "\nMemperbarui data :\n";
-        cout << "Nama  : ";
-        cin >> produk[kode].nama;
-        cout << "Harga : ";
-        cin >> produk[kode].harga;
-        cout << "Stok  : ";
-        cin >> produk[kode].stok;
+        cout << "Masukkan Nama Baru Produk  : ";
+        produk[kode].nama = getValidString();
+        cout << "Masukkan Harga Baru        : ";
+        produk[kode].harga = getValidInput(1000);
         cout << "Berhasil Memperbarui produk" << endl;
     }
+
+    membuatGaris(54, "-");
 }
 
 // Fungsi untuk menghapus produk
 void hapusProduk()
 {
-    int kode;
+    heading("HAPUS PRODUK", 54);
 
-    cout << "Masukan kode produk yang ingin dihapus : ";
-    cin >> kode;
+    cout << "Masukkan Kode Produk : ";
+    int kode = getValidInput(1, jumlahProduk);
 
     if (cekProduk(kode))
     {
         tampilkanProduk(kode);
 
         char konfirmasi;
-        cout << "Apakah anda yakin ingin menghapus produk tersebut : ";
+        cout << "Apakah anda yakin ingin menghapus produk tersebut\n[Y] Hapus  [N] Tidak\nMasukan Pilihan anda : ";
         cin >> konfirmasi;
         if (konfirmasi == 'y' || konfirmasi == 'Y')
         {
@@ -211,14 +216,15 @@ void hapusProduk()
             cout << "Hapus Produk di batalkan\n";
         }
     }
+    membuatGaris(54, "-");
 }
 
 // Fungsi untuk mencari produk
 void cariProduk()
 {
-    string nama;
     cout << "Masukkan nama produk yang ingin dicari: ";
-    cin >> nama;
+    string nama = getValidString();
+
     bool ditemukan = false;
     for (int i = 0; i < jumlahProduk; i++)
     {
@@ -286,17 +292,16 @@ void transaksiPenjualan()
     do
     {
         system("cls");
-        cout << "======================================================" << endl;
-        cout << "                  TRANKSAKSI PENJUALAN                " << endl;
-        cout << "======================================================" << endl;
+        heading("TRANKSAKSI PENJUALAN");
         cout << "Pilih Menu Utama:" << endl;
         cout << "1. Buat Transaksi Baru\n";
         cout << "2. Lihat Riwayat Transaksi\n";
         cout << "3. Cetak Struk Penjualan\n";
         cout << "4. Kembali ke Menu Utama\n";
-        cout << "======================================================" << endl;
+        membuatGaris(52);
         cout << "Masukan Pilihan Anda : ";
-        cin >> pilihan;
+
+        pilihan = getValidInput(1, 4);
 
         switch (pilihan)
         {
@@ -308,6 +313,9 @@ void transaksiPenjualan()
             break;
         case 3:
             cetakStrukPenjualan();
+            break;
+        case 4:
+            cout << "keluar dari menu transaksi penjualan" << endl;
             break;
         }
         system("pause");
@@ -322,20 +330,19 @@ void tambahTransaksi()
     do
     {
         system("cls");
-        cout << "======================================================" << endl;
-        cout << "                   TRANKSAKSI BARU                    " << endl;
-        cout << "======================================================" << endl;
+        heading("TRANKSAKSI BARU");
         cout << "|                   KERANJANG ANDA                   |" << endl;
         lihatKeranjangTransaksi(jumlahTransaksi);
         cout << "| " << setw(35) << "Total Harga | " << setw(15) << transaksi[jumlahTransaksi].subTotal << " | " << endl;
-        cout << "======================================================" << endl;
+        membuatGaris(54);
         cout << "Pilih Menu Utama:" << endl;
         cout << "1. Tambahkan Produk ke Dalam Keranjang\n";
         cout << "2. Lihat Daftar Produk\n";
         cout << "3. Keluar dan Simpan\n";
-        cout << "======================================================" << endl;
+        membuatGaris(54);
         cout << "Masukan Pilihan Anda : ";
-        cin >> pilihan;
+
+        pilihan = getValidInput(1, 4);
 
         cout << endl;
         switch (pilihan)
@@ -406,17 +413,17 @@ void tambahProdukKeKeranjang()
     int idDetailTransaksi = JumlahDetailTransaksi;
     int kode = 0, kuantitas = 0;
 
-    cout << "======================================================" << endl;
-    cout << "              TAMBAHKAN PRODUK KE KERANJANG           " << endl;
-    cout << "======================================================" << endl;
+    heading("TAMBAHKAN PRODUK KE KERANJANG");
+
     cout << "Masukkan Kode Produk: ";
-    cin >> kode;
+    kode = getValidInput();
     if (!cekProduk(kode))
     {
         return;
     }
+
     cout << "Masukkan Kuantitas  : ";
-    cin >> kuantitas;
+    kuantitas = getValidInput();
     if (produk[kode].stok - kuantitas < 0)
     {
         cout << "Stok tidak mencukupi.\n";
@@ -425,19 +432,14 @@ void tambahProdukKeKeranjang()
 
     int subTotal = produk[kode].harga * kuantitas;
 
-    cout << "------------------------------------------------------" << endl;
+    membuatGaris(54, "-");
     cout << "Nama Produk         : " << produk[kode].nama << endl;
     cout << "Harga Satuan        : " << produk[kode].harga << endl;
     cout << "Subtotal            : " << subTotal << endl;
-    cout << "------------------------------------------------------" << endl;
+    membuatGaris(54, "-");
     cout << "Produk berhasil ditambahkan ke keranjang!" << endl;
 
-    detail[idDetailTransaksi].idTransaksi = idTransaksi;
-    detail[idDetailTransaksi].kodeProduk = produk[kode].kode;
-    detail[idDetailTransaksi].kuantitas = kuantitas;
-    detail[idDetailTransaksi].subTotal = subTotal;
-
-    transaksi[idTransaksi].subTotal += subTotal;
+    detail[idDetailTransaksi] = {idTransaksi, produk[kode].kode, kuantitas, subTotal};
     JumlahDetailTransaksi++;
 }
 
@@ -462,9 +464,7 @@ void tampilkanTransaksi()
 {
     system("cls");
     int idTransaksi;
-    cout << "=======================================================" << endl;
-    cout << "                    DAFTAR TRANSAKSI                   " << endl;
-    cout << "=======================================================" << endl;
+    heading("DAFTAR TRANSAKSI", 54);
     cout << "|  Tanggal  | Nomor Transaksi | Total Transaksi | Metode |" << endl;
     for (int i = 1; i < jumlahTransaksi; i++)
     {
@@ -473,7 +473,7 @@ void tampilkanTransaksi()
              << " | " << setw(15) << transaksi[i].subTotal
              << " | " << "Tunai" << endl;
     }
-    cout << "======================================================" << endl;
+    membuatGaris(54);
     cout << "Masukan Nomor Transaksi Untuk Detail : ";
     cin >> idTransaksi;
 
@@ -1011,9 +1011,10 @@ void menu()
         cout << "4. Pengelolaan Stok\n";
         cout << "5. Pengaturan (comming soon)\n";
         cout << "6. Keluar\n";
-        cout << "======================================================" << endl;
+        membuatGaris(54);
         cout << "Masukan Pilihan Anda : ";
-        cin >> pilihan;
+
+        pilihan = getValidInput(1, 6); // Validasi input angka
 
         switch (pilihan)
         {
@@ -1030,12 +1031,10 @@ void menu()
             pengelolaanStok();
             break;
         case 5:
+            cout << "Fitur belum tersedia.\n";
             break;
         case 6:
             cout << "Terima kasih telah menggunakan aplikasi.\n";
-            break;
-        default:
-            cout << "Pilihan tidak valid.\n";
             break;
         }
     } while (pilihan != 6);
@@ -1046,4 +1045,55 @@ int main()
 {
     menu();
     return 0;
+}
+
+int getValidInput(int min, int max)
+{
+    int input;
+    while (true)
+    {
+        cin >> input;
+
+        // Jika input gagal atau di luar batas
+        if (cin.fail() || input < min || input > max)
+        {
+            cin.clear();                // Reset flag kesalahan
+            cin.ignore(INT8_MAX, '\n'); // Abaikan input yang salah
+            if (max == INT32_MAX)
+            {
+                cout << "Input tidak valid. Masukkan angka lebih dari " << min << ": ";
+            }
+            else
+            {
+                cout << "Input tidak valid. Masukkan angka antara " << min << " dan " << max << ": ";
+            }
+        }
+        else
+        {
+            cin.ignore(INT8_MAX, '\n'); // Abaikan karakter tambahan
+            break;
+        }
+    }
+    return input;
+}
+
+string getValidString()
+{
+    string input;
+    while (true)
+    {
+        cin >> input;
+
+        // Jika input kosong atau hanya spasi
+        if (input.empty() || all_of(input.begin(), input.end(), [](char c)
+                                    { return isspace(c); }))
+        {
+            cout << "Input tidak valid. Masukkan teks yang benar.\n";
+        }
+        else
+        {
+            break;
+        }
+    }
+    return input;
 }
