@@ -1,10 +1,11 @@
-#include <iostream>
-#include <iomanip>
-#include <algorithm> // Tambahkan ini
-#include <cctype>    // Untuk std::isspace
+#include "../include/utils.h"
 using namespace std;
 
-void membuatGaris(int panjangGaris, string simbol = "=")
+time_t timestamp = time(NULL);
+struct tm datetime = *localtime(&timestamp);
+char outputTime[50];
+
+void membuatGaris(int panjangGaris, string simbol)
 {
     string garis;
     for (int i = 0; i < panjangGaris; i++)
@@ -15,7 +16,7 @@ void membuatGaris(int panjangGaris, string simbol = "=")
     cout << garis << endl;
 }
 
-void tampilkanHeading(const string &judul, int panjang = 52, char simbol = '=')
+void tampilkanHeading(const string &judul, int panjang, char simbol)
 {
     system("cls");
     membuatGaris(panjang, string(1, simbol));
@@ -23,7 +24,7 @@ void tampilkanHeading(const string &judul, int panjang = 52, char simbol = '=')
     membuatGaris(panjang, string(1, simbol));
 }
 
-int getValidInput(int min = 1, int max = INT32_MAX)
+int getValidInput(int min, int max)
 {
     int input;
     while (true)
@@ -53,7 +54,7 @@ int getValidInput(int min = 1, int max = INT32_MAX)
     return input;
 }
 
-string getValidString(string pesanKesalahan = "Input tidak valid. Masukkan teks yang benar.")
+string getValidString(string pesanKesalahan)
 {
     string input;
     while (true)
